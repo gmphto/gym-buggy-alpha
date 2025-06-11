@@ -1,9 +1,52 @@
 import { z } from "zod"
 
+const AvailabilitySchema = z.object({
+  monday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+  tuesday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+  wednesday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+  thursday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+  friday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+  saturday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+  sunday: z.object({
+    morning: z.boolean().default(false),
+    afternoon: z.boolean().default(false),
+    evening: z.boolean().default(false),
+  }).default({}),
+}).default({})
+
 export const UserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   name: z.string().min(1),
+  bio: z.string().optional(),
+  age: z.number().int().min(13).max(120).optional(),
+  fitnessLevel: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
+  workoutPreferences: z.array(z.string()).default([]),
+  availability: AvailabilitySchema,
   profileImage: z.string().url().optional(),
   location: z.object({
     latitude: z.number(),

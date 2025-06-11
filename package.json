@@ -7,7 +7,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "scrape:puregym": "npx tsx scripts/puregym-scraper.ts",
+    "scrape:puregym:enhanced": "npx tsx scripts/enhanced-puregym-scraper.ts",
+    "test:scraper": "npx tsx scripts/test-scraper.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -31,7 +34,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.57.0",
-    "tailwind-merge": "^3.3.0",
+    "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.8",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.3",
@@ -44,5 +47,9 @@
     "location"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^16.5.0",
+    "tsx": "^4.19.4"
+  }
 }

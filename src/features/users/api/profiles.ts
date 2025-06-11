@@ -14,10 +14,7 @@ export class ProfileService {
   async getProfile(userId: string): Promise<z.infer<typeof UserSchema> | null> {
     const { data, error } = await this.supabase
       .from('profiles')
-      .select(`
-        *,
-        gym:gyms(*)
-      `)
+      .select('*')
       .eq('id', userId)
       .single()
 
@@ -28,18 +25,29 @@ export class ProfileService {
       throw new Error(error.message)
     }
 
+    // Get gym data separately if gym_id exists
+    let gymData = null
+    if (data.gym_id) {
+      const { data: gym, error: gymError } = await this.supabase
+        .from('gyms')
+        .select('id, name, address')
+        .eq('id', data.gym_id)
+        .single()
+
+      if (!gymError) {
+        gymData = gym
+      }
+    }
+
     // Transform database format to schema format
-    return this.transformProfileToSchema(data)
+    return this.transformProfileToSchema(data, gymData)
   }
 
   // Pure function
   async getProfiles(gymId?: string): Promise<z.infer<typeof UserSchema>[]> {
     let query = this.supabase
       .from('profiles')
-      .select(`
-        *,
-        gym:gyms(*)
-      `)
+      .select('*')
 
     if (gymId) {
       query = query.eq('gym_id', gymId)
@@ -52,7 +60,25 @@ export class ProfileService {
     }
 
     // Transform database format to schema format
-    return [...data].map(profile => this.transformProfileToSchema(profile))
+    const profiles = await Promise.all(
+      [...data].map(async (profile) => {
+        let gymData = null
+        if (profile.gym_id) {
+          const { data: gym, error: gymError } = await this.supabase
+            .from('gyms')
+            .select('id, name, address')
+            .eq('id', profile.gym_id)
+            .single()
+
+          if (!gymError) {
+            gymData = gym
+          }
+        }
+        return this.transformProfileToSchema(profile, gymData)
+      })
+    )
+
+    return profiles
   }
 
   // Pure function
@@ -70,17 +96,28 @@ export class ProfileService {
     const { data, error } = await this.supabase
       .from('profiles')
       .insert(insertData)
-      .select(`
-        *,
-        gym:gyms(*)
-      `)
+      .select('*')
       .single()
 
     if (error) {
       throw new Error(error.message)
     }
 
-    return this.transformProfileToSchema(data)
+    // Get gym data if gym_id exists
+    let gymData = null
+    if (data.gym_id) {
+      const { data: gym, error: gymError } = await this.supabase
+        .from('gyms')
+        .select('id, name, address')
+        .eq('id', data.gym_id)
+        .single()
+
+      if (!gymError) {
+        gymData = gym
+      }
+    }
+
+    return this.transformProfileToSchema(data, gymData)
   }
 
   // Pure function
@@ -104,27 +141,35 @@ export class ProfileService {
       .from('profiles')
       .update(updateData)
       .eq('id', userId)
-      .select(`
-        *,
-        gym:gyms(*)
-      `)
+      .select('*')
       .single()
 
     if (error) {
       throw new Error(error.message)
     }
 
-    return this.transformProfileToSchema(data)
+    // Get gym data if gym_id exists
+    let gymData = null
+    if (data.gym_id) {
+      const { data: gym, error: gymError } = await this.supabase
+        .from('gyms')
+        .select('id, name, address')
+        .eq('id', data.gym_id)
+        .single()
+
+      if (!gymError) {
+        gymData = gym
+      }
+    }
+
+    return this.transformProfileToSchema(data, gymData)
   }
 
   // Pure function
   async searchProfiles(gymId: string, excludeUserId: string): Promise<z.infer<typeof UserSchema>[]> {
     const { data, error } = await this.supabase
       .from('profiles')
-      .select(`
-        *,
-        gym:gyms(*)
-      `)
+      .select('*')
       .eq('gym_id', gymId)
       .neq('id', excludeUserId)
 
@@ -132,23 +177,42 @@ export class ProfileService {
       throw new Error(error.message)
     }
 
-    return [...data].map(profile => this.transformProfileToSchema(profile))
+    // Transform database format to schema format
+    const profiles = await Promise.all(
+      [...data].map(async (profile) => {
+        let gymData = null
+        if (profile.gym_id) {
+          const { data: gym, error: gymError } = await this.supabase
+            .from('gyms')
+            .select('id, name, address')
+            .eq('id', profile.gym_id)
+            .single()
+
+          if (!gymError) {
+            gymData = gym
+          }
+        }
+        return this.transformProfileToSchema(profile, gymData)
+      })
+    )
+
+    return profiles
   }
 
   // Pure function
-  private transformProfileToSchema(profile: any): z.infer<typeof UserSchema> {
+  private transformProfileToSchema(profile: Profile, gymData?: any): z.infer<typeof UserSchema> {
     return {
       id: profile.id,
       email: profile.email,
       name: profile.name,
-      profileImage: profile.profile_image,
-      location: profile.location,
-      gym: profile.gym ? {
-        id: profile.gym.id,
-        name: profile.gym.name,
-        address: profile.gym.address,
+      profileImage: profile.profile_image || undefined,
+      location: profile.location as { latitude: number; longitude: number; address?: string } || undefined,
+      gym: gymData ? {
+        id: gymData.id,
+        name: gymData.name,
+        address: gymData.address,
       } : undefined,
-      preferences: profile.preferences || {
+      preferences: (profile.preferences as { maxDistance: number; workoutTypes: string[]; availableHours: string[] }) || {
         maxDistance: 10,
         workoutTypes: [],
         availableHours: [],

@@ -39,6 +39,26 @@ export class AuthService {
   }
 
   // Pure function
+  async signInWithGoogle() {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return data
+  }
+
+  // Pure function
   async signOut() {
     const { error } = await this.supabase.auth.signOut()
     

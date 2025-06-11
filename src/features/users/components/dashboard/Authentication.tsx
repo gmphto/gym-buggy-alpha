@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { GoogleButton } from "@/components/ui/google-button"
 import { Input } from "@/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
@@ -12,7 +13,7 @@ import { useAuth } from "./AuthProvider"
 export function Authentication() {
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { signIn, signUp, loading } = useAuth()
+  const { signIn, signUp, signInWithGoogle, loading } = useAuth()
 
   const loginForm = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -50,6 +51,15 @@ export function Authentication() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setError(null)
+      await signInWithGoogle()
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Google sign-in failed')
+    }
+  }
+
   if (isLoginMode) {
     return (
       <div className="w-full max-w-md mx-auto space-y-6">
@@ -63,6 +73,22 @@ export function Authentication() {
             {error}
           </div>
         )}
+
+        {/* Google Sign In */}
+        <GoogleButton onClick={handleGoogleSignIn} disabled={loading}>
+          {loading ? "Signing in..." : "Continue with Google"}
+        </GoogleButton>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-slate-300 dark:border-slate-600" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white dark:bg-slate-950 px-2 text-slate-500">
+              Or continue with email
+            </span>
+          </div>
+        </div>
 
         <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
           <div className="space-y-2">
@@ -129,6 +155,22 @@ export function Authentication() {
           {error}
         </div>
       )}
+
+      {/* Google Sign In */}
+      <GoogleButton onClick={handleGoogleSignIn} disabled={loading}>
+        {loading ? "Creating account..." : "Continue with Google"}
+      </GoogleButton>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-slate-300 dark:border-slate-600" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white dark:bg-slate-950 px-2 text-slate-500">
+            Or continue with email
+          </span>
+        </div>
+      </div>
 
       <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
         <div className="space-y-2">

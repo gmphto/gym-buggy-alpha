@@ -13,6 +13,7 @@ interface AuthContextType {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, name: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -98,6 +99,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const signInWithGoogle = async () => {
+    setLoading(true)
+    try {
+      await authService.signInWithGoogle()
+      // OAuth will redirect, so we don't need to handle the response here
+    } catch (error) {
+      setLoading(false)
+      throw error
+    }
+  }
+
   const signOut = async () => {
     setLoading(true)
     try {
@@ -123,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     refreshProfile,
   }
