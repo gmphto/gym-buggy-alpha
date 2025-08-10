@@ -7,18 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "scrape:puregym": "npx tsx scripts/puregym-scraper.ts",
-    "scrape:puregym:enhanced": "npx tsx scripts/enhanced-puregym-scraper.ts",
-    "test:scraper": "npx tsx scripts/test-scraper.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-slot": "^1.2.3",
-    "@supabase/auth-ui-react": "^0.4.7",
-    "@supabase/auth-ui-shared": "^0.1.8",
-    "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.50.0",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.7",
@@ -49,7 +42,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "dotenv": "^16.5.0",
-    "tsx": "^4.19.4"
+    "dotenv": "^16.5.0"
   }
 }
